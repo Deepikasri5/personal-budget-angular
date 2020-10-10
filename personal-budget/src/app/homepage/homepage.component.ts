@@ -1,49 +1,53 @@
-import { AfterViewInit, Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
 import { Chart } from 'chart.js';
+import { DataService } from '../data.service';
+
+
 
 @Component({
   selector: 'pb-homepage',
   templateUrl: './homepage.component.html',
   styleUrls: ['./homepage.component.scss']
 })
-export class HomepageComponent implements AfterViewInit {
+export class HomepageComponent implements OnInit{
 
-  public dataSource = {
-    datasets: [
-        {
-            data: [],
-            backgroundColor: [
-                '#ffcd56',
-                '#ff6384',
-                '#36a2eb',
-                '#fd6b19',
-                '#A62A2A',
-                '#9F703A',
-                '#9CCB19'
-            ],
-        }
-],
-labels: []
-};
 
-  constructor(private http: HttpClient) { }
 
-  ngAfterViewInit(): void {
-    this.http.get('http://localhost:3000/budget').subscribe((res: any) => {
-      for (let i = 0; i < res.myBudget.length; i++) {
-        this.dataSource.datasets[0].data[i] = res.myBudget[i].budget;
-        this.dataSource.labels[i] = res.myBudget[i].title;
-        this.createChart();
-      }
-    });
-  }
-  createChart() {
-    // const ctx = document.getElementById('myChart').getContext('2d');
-    const ctx = document.getElementById('myChart');
-    const myPieChart = new Chart(ctx, {
+  constructor(private dataService: DataService) { }
+
+
+  createChart(data) {
+    var label = [];
+    var chartData = [];
+    for (var i = 0; i < data.myBudget.length; i++) {
+      label[i] = data.myBudget[i].title;
+      chartData[i] = data.myBudget[i].budget;
+    }
+    var ctx = document.getElementById('myChart');
+    var myPieChart = new Chart(ctx, {
       type: 'pie',
-      data: this.dataSource,
+      data: {
+        datasets: [
+            {
+                data: chartData,
+                backgroundColor: [
+                    '#ffcd56',
+                    '#ff6384',
+                    '#36a2eb',
+                    '#fd6b19',
+                    '#A62A2A',
+                    '#9F703A',
+                    '#9CCB19'
+                ],
+            }
+    ],
+    labels: label
+    }
+});
+  }
+  ngOnInit(): void {
+    this.dataService.getData().subscribe((data: any) => {
+      this.createChart(data);
     });
   }
 }
